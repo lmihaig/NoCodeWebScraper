@@ -752,7 +752,8 @@ const populateCandidates = function(candidates, selector) {
         setTimeout(function () {
             var bestSelector=getBestSelector();
             $id("stream_data_selector_"+selectorTarget).value=bestSelector;
-            $id("stream_data_targeter_"+selectorTarget).style.background="turquoise";
+            // $id("stream_data_targeter_"+selectorTarget).style.borderBlock="";
+            $id("stream_data_targeter_"+selectorTarget).style.background="green";
 
             console.log("best", bestSelector);
         }, 100);
@@ -854,6 +855,8 @@ const startPicker = function() {
     $id('cancel').addEventListener('click', cancelPicker);
     $id('addScrape').addEventListener('click', addStreamScrape);
     $id('stream_data_targeter_1').addEventListener('click', genConfigureTargetSelector(1));
+    $id('stream_data_name_1').setAttribute("placeholder", "Enter value name here")
+
     // $id('move').addEventListener('mousedown', onStartMoving);
     // $id('move').addEventListener('touchstart', onStartMoving);
     // $id('candidateFilters').addEventListener('click', onCandidateClicked);
@@ -937,6 +940,7 @@ const addStreamScrape = function() {
     element=document.createElement("input")
     element.setAttribute("type","text")
     element.setAttribute("id","stream_data_name_"+no_scrapes)
+    element.setAttribute("placeholder","Enter value name here")
     $id("stream_data_last").insertAdjacentElement("beforebegin",element)
 
     element=document.createElement("input")
@@ -967,14 +971,16 @@ const genConfigureTargetSelector=function(id ) {
 const ConfigureTargetSelector=function(id ) {
     console.log("reatarget", id)
     if($id("stream_data_selector_"+selectorTarget).value=="")
-        $id("stream_data_targeter_"+selectorTarget).style.background="#dc6464";
+        $id("stream_data_targeter_"+selectorTarget).style.borderBlock="";
     else
-        $id("stream_data_targeter_"+selectorTarget).style.background="green";
-    selectorTarget=id
+        $id("stream_data_targeter_"+selectorTarget).style.borderBlock="";
+    $id("stream_data_targeter_"+selectorTarget).innerHTML="target";
+    selectorTarget=id;
+    $id("stream_data_targeter_"+selectorTarget).innerHTML="targeted";
     if($id("stream_data_selector_"+selectorTarget).value=="")
-        $id("stream_data_targeter_"+selectorTarget).style.background="yellow";
+        $id("stream_data_targeter_"+selectorTarget).style.borderBlock="revert";
     else
-        $id("stream_data_targeter_"+selectorTarget).style.background="turquoise";
+        $id("stream_data_targeter_"+selectorTarget).style.borderBlock="revert";
 
     showScrapes()
 }
