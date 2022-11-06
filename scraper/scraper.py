@@ -3,8 +3,8 @@ from selenium.webdriver.common.by import By
 import requests
 from time import sleep
 
-MASTER_SERVER = ""
-path_to_chrome_profile = "C:\\UNI\\Smarthack\\chrome_profile"
+MASTER_SERVER = "http://localhost:8069/"
+path_to_chrome_profile = r"C:\Users\lmg\Desktop\NoCodeWebScraper\scraper\chrome_profile"
 
 
 class Scraper:
@@ -29,23 +29,25 @@ class ScrapeBatchProcessor:
             response = requests.get(MASTER_SERVER+"api/scraper")
             expired_scrapes = response.json()
             if expired_scrapes["status"] == "empty":
+                print("No job ;{")
                 sleep(10)
                 continue
 
             new_scrapes = []
             for scrape in expired_scrapes["job"]["scrapes"]:
-                entries = get_scrape_entries(expired_scrapes["job"]["url"],
-                                             scrape["selector"])
-                new_scrapes.append()
+                entries = Scraper.get_scrape_entries(expired_scrapes["job"]["url"],
+                                                     scrape["selector"])
+                new_scrapes.append(entries)
 
             requests.post(
                 MASTER_SERVER+"api/scraper",
-                {
+                json={
                     "status": "OK",
                     "id": expired_scrapes["job"]["id"],
                     "scrapes": new_scrapes
                 })
             sleep(1)
+
 
 if __name__ == "__main__":
     ScrapeBatchProcessor.realtime_batch_loop()

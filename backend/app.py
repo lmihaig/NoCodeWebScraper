@@ -1,5 +1,5 @@
 import datetime
-from mongoengine.fields import EmbeddedDocument, EmbeddedDocumentListField, DictField, StringField, IntField, DateTimeField, ReferenceField
+from mongoengine.fields import EmbeddedDocument, EmbeddedDocumentListField, ListField, StringField, IntField, DateTimeField, ReferenceField
 from threading import Lock
 from mongoengine import Document, disconnect, connect
 from flask import Flask, request
@@ -11,7 +11,7 @@ parser = reqparse.RequestParser()
 
 
 class ScrapeEntry(EmbeddedDocument):
-    val = DictField()
+    val = ListField(StringField())
     scrapedDate = DateTimeField(default=datetime.datetime.now)
 
 
@@ -29,10 +29,10 @@ class Source(Document):
 
     def scrape_job(self):
         return {
-            "id": self.id, "url": self.url,
+            "id": str(self.id), "url": self.url,
             "scrapes": [{
-                "selector": self.scrapes.selector,
-                "name": self.scrapes.name,
+                "selector": scrape.selector,
+                "name": scrape.name,
             } for scrape in self.scrapes]}
 
 
@@ -72,7 +72,7 @@ class Scraper(Resource):
     def get(self):
         with mongoConnection:
             for source in Source.objects:
-                if source.lastscraped + datetime.timedelta(seconds=source.interval) < datetime.datetime.now():
+                if source.last_scraped + datetime.timedelta(seconds=source.interval) > datetime.datetime.now():
                     continue
 
                 return {"status": "work", "job": source.scrape_job()}
@@ -80,17 +80,19 @@ class Scraper(Resource):
 
     def post(self):
         args = request.get_json()
+        print(args)
         if args["status"] != "OK":
             return 0
         with mongoConnection:
             source = Source.objects.filter(id=args["id"])
+            if len(source) != 1:
+                return {}, 400
+
+            source = source[0]
 
             source.last_scraped = datetime.datetime.now()
-            for scrape in source.scrapes:
-                for new_entry in args["scrapes"]:
-                    if scrape.name == new_entry["name"]:
-                        scrape.values.append(ScrapeEntry(val=new_entry["val"]))
-                        break
+            for i in range(len(source.scrapes)):
+                source.scrapes[i].values.append(ScrapeEntry(val=args["scrapes"][i]))
             source.save()
 
 
@@ -107,5 +109,6 @@ class Extension(Resource):
             ).save()
 
 
+@apio.route("")
 if __name__ == '__main__':
     app.run(debug=True, port=8069)
