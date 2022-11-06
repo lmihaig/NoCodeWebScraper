@@ -1,60 +1,64 @@
 <template>
   <v-app>
-    <v-app-bar
-      app
-      color="primary"
-      dark
-    >
+    <v-app-bar app color="primary" dark>
       <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
-
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
+        <dialogModal @addWidget="addWidget" />
+        <span class=".text-lg-h6 pl-3">add something</span>
       </div>
-
-      <v-spacer></v-spacer>
-
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
     </v-app-bar>
 
     <v-main>
-      <HelloWorld/>
+      <WidgetsGrid v-if="widgets.length" :widgets="widgets" />
     </v-main>
   </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld';
+import dialogModal from './components/addModal.vue';
+import WidgetsGrid from './components/WidgetsGrid.vue';
 
 export default {
   name: 'App',
 
   components: {
-    HelloWorld,
+    dialogModal,
+    WidgetsGrid,
   },
 
-  data: () => ({
-    //
-  }),
+  data() {
+    return {
+      widgets: [],
+    };
+  },
+  methods: {
+    addWidget(input) {
+      const labels = ['January', 'February', 'March', 'April', 'May', 'June'];
+
+      const data = {
+        labels: labels,
+        datasets: [
+          {
+            label: 'My First dataset',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: [0, 10, 5, 2, 20, 30, 45],
+          },
+        ],
+      };
+
+      const config = {
+        type: 'line',
+        data: data,
+        options: {},
+      };
+
+      this.widgets.push({
+        title: input,
+        subTitle: input,
+        content: input,
+        config,
+      });
+    },
+  },
 };
 </script>
