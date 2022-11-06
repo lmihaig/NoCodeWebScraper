@@ -17,7 +17,7 @@
 <body>
 <aside>
 <section>
-    <div>
+    <div class="hidden">
         <div class="codeMirrorContainer codeMirrorBreakAll"></div>
         <div class="resultsetWidgets">
             <span id="resultsetModifiers">
@@ -33,19 +33,31 @@
             <span id="resultsetCount"></span>
         </div>
     </div>
+    <div id="stream_data" style="text-align-last: left;">
+        <input type="text" id="stream_data_name_1" name="name" value="">
+        <input type="text" id="stream_data_selector_1" class="hidden" name="selector" value="">
+        <button type="button" name="target" id="stream_data_targeter_1" style="margin: 0 38px; background: #dc6464;">target</button>
+        <br>
+
+        <div id="stream_data_last"></div>
+        <BR>
+        <span id="addScrape" class=""><span class="caption">+</span></span>
+
+    </div>
     <div id="toolbar">
         <div>
-            <button id="preview" type="button" data-i18n="pickerPreview">_<span class="hover"></span></button>
+            <button id="preview" class="hidden" type="button" data-i18n="pickerPreview">_<span class="hover"></span></button>
         </div>
-        <div id="move"></div>
+        <div id="move" class="hidden"></div>
         <div>
-            <button id="create" type="button" class="preferred" disabled data-i18n="pickerCreate">_<span class="hover"></span></button>
-            <button id="pick" type="button" data-i18n="pickerPick">_<span class="hover"></span></button>
-            <button id="quit" type="button" data-i18n="pickerQuit">_<span class="hover"></span></button>
+            <!-- <button id="create" type="hidden" class="preferred" disabled data-i18n="pickerCreate">_<span class="hover"></span></button> -->
+            <!-- <button id="pick" type="hidden" data-i18n="pickerPick">_<span class="hover"></span></button> -->
+            <button id="quit" type="button" >Submit<span class="hover"></span></button>
+            <button id="cancel" type="button" >Cancel<span class="hover"></span></button>
         </div>
     </div>
 </section>
-<ul id="candidateFilters">
+<ul id="candidateFilters" class="hidden">
     <li id="netFilters">
         <span data-i18n="pickerNetFilters"></span>
         <ul lang="en" class="changeFilter"></ul>

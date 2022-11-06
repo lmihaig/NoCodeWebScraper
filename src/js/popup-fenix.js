@@ -123,10 +123,10 @@ const hashFromPopupData = function(reset = false) {
     }
     hasher.sort();
     hasher.push(uDom('body').hasClass('off'));
-    hasher.push(uDom.nodeFromId('no-large-media').classList.contains('on'));
-    hasher.push(uDom.nodeFromId('no-cosmetic-filtering').classList.contains('on'));
-    hasher.push(uDom.nodeFromId('no-remote-fonts').classList.contains('on'));
-    hasher.push(uDom.nodeFromId('no-scripting').classList.contains('on'));
+    // hasher.push(uDom.nodeFromId('no-large-media').classList.contains('on'));
+    // hasher.push(uDom.nodeFromId('no-cosmetic-filtering').classList.contains('on'));
+    // hasher.push(uDom.nodeFromId('no-remote-fonts').classList.contains('on'));
+    // hasher.push(uDom.nodeFromId('no-scripting').classList.contains('on'));
 
     const hash = hasher.join('');
     if ( reset ) {
@@ -236,7 +236,7 @@ const updateFirewallCellRule = function(cells, scope, des, type, rule) {
             (ruleParts[1] !== '*' || ruleParts[2] === type) &&
             (ruleParts[1] === des) &&
             (ruleParts[0] === scopeToSrcHostnameMap[scope])
-            
+
         ) {
             cell.classList.add('ownRule');
         }
@@ -503,18 +503,19 @@ const renderPrivacyExposure = function() {
         allHostnameRows.push(des);
         desHostnameDone.add(des);
     }
-
-    const summary = domainsHitStr
-        .replace('{{count}}', touchedDomainCount.toLocaleString())
-        .replace('{{total}}', allDomainCount.toLocaleString());
-    uDom.nodeFromSelector(
-        '[data-i18n^="popupDomainsConnected"] + span'
-    ).textContent = summary;
+    // 
+    // const summary = domainsHitStr
+    //     .replace('{{count}}', touchedDomainCount.toLocaleString())
+    //     .replace('{{total}}', allDomainCount.toLocaleString());
+    // uDom.nodeFromSelector(
+    //     '[data-i18n^="popupDomainsConnected"] + span'
+    // ).textContent = summary;
 };
 
 /******************************************************************************/
 
 const updateHnSwitches = function() {
+    return
     uDom.nodeFromId('no-popups').classList.toggle(
         'on', popupData.noPopups === true
     );
@@ -570,33 +571,33 @@ const renderPopup = function() {
         popupData.canElementPicker === true && isFiltering
     );
 
-    let blocked, total;
-    if ( popupData.pageCounts !== undefined ) {
-        const counts = popupData.pageCounts;
-        blocked = counts.blocked.any;
-        total = blocked + counts.allowed.any;
-    } else {
-        blocked = 0;
-        total = 0;
-    }
-    let text;
-    if ( total === 0 ) {
-        text = formatNumber(0);
-    } else {
-        text = statsStr.replace('{{count}}', formatNumber(blocked))
-                       .replace('{{percent}}', formatNumber(Math.floor(blocked * 100 / total)));
-    }
-    uDom.nodeFromSelector('[data-i18n^="popupBlockedOnThisPage"] + span').textContent = text;
-
-    blocked = popupData.globalBlockedRequestCount;
-    total = popupData.globalAllowedRequestCount + blocked;
-    if ( total === 0 ) {
-        text = formatNumber(0);
-    } else {
-        text = statsStr.replace('{{count}}', formatNumber(blocked))
-                       .replace('{{percent}}', formatNumber(Math.floor(blocked * 100 / total)));
-    }
-    uDom.nodeFromSelector('[data-i18n^="popupBlockedSinceInstall"] + span').textContent = text;
+    // let blocked, total;
+    // if ( popupData.pageCounts !== undefined ) {
+    //     const counts = popupData.pageCounts;
+    //     blocked = counts.blocked.any;
+    //     total = blocked + counts.allowed.any;
+    // } else {
+    //     blocked = 0;
+    //     total = 0;
+    // }
+    // let text;
+    // if ( total === 0 ) {
+    //     text = formatNumber(0);
+    // } else {
+    //     text = statsStr.replace('{{count}}', formatNumber(blocked))
+    //                    .replace('{{percent}}', formatNumber(Math.floor(blocked * 100 / total)));
+    // }
+    // uDom.nodeFromSelector('[data-i18n^="popupBlockedOnThisPage"] + span').textContent = text;
+    //
+    // blocked = popupData.globalBlockedRequestCount;
+    // total = popupData.globalAllowedRequestCount + blocked;
+    // if ( total === 0 ) {
+    //     text = formatNumber(0);
+    // } else {
+    //     text = statsStr.replace('{{count}}', formatNumber(blocked))
+    //                    .replace('{{percent}}', formatNumber(Math.floor(blocked * 100 / total)));
+    // }
+    // uDom.nodeFromSelector('[data-i18n^="popupBlockedSinceInstall"] + span').textContent = text;
 
     // This will collate all domains, touched or not
     renderPrivacyExposure();
@@ -605,24 +606,24 @@ const renderPopup = function() {
     updateHnSwitches();
 
     // Report popup count on badge
-    total = popupData.popupBlockedCount;
-    uDom.nodeFromSelector('#no-popups .fa-icon-badge')
-        .textContent = total ? Math.min(total, 99).toLocaleString() : '';
-
-    // Report large media count on badge
-    total = popupData.largeMediaCount;
-    uDom.nodeFromSelector('#no-large-media .fa-icon-badge')
-        .textContent = total ? Math.min(total, 99).toLocaleString() : '';
-
-    // Report remote font count on badge
-    total = popupData.remoteFontCount;
-    uDom.nodeFromSelector('#no-remote-fonts .fa-icon-badge')
-        .textContent = total ? Math.min(total, 99).toLocaleString() : '';
-
-    document.documentElement.classList.toggle(
-        'colorBlind',
-        popupData.colorBlindFriendly === true
-    );
+    // total = popupData.popupBlockedCount;
+    // uDom.nodeFromSelector('#no-popups .fa-icon-badge')
+    //     .textContent = total ? Math.min(total, 99).toLocaleString() : '';
+    //
+    // // Report large media count on badge
+    // total = popupData.largeMediaCount;
+    // uDom.nodeFromSelector('#no-large-media .fa-icon-badge')
+    //     .textContent = total ? Math.min(total, 99).toLocaleString() : '';
+    //
+    // // Report remote font count on badge
+    // total = popupData.remoteFontCount;
+    // uDom.nodeFromSelector('#no-remote-fonts .fa-icon-badge')
+    //     .textContent = total ? Math.min(total, 99).toLocaleString() : '';
+    //
+    // document.documentElement.classList.toggle(
+    //     'colorBlind',
+    //     popupData.colorBlindFriendly === true
+    // );
 
     setGlobalExpand(popupData.firewallPaneMinimized === false, true);
 
@@ -631,7 +632,7 @@ const renderPopup = function() {
         buildAllFirewallRows();
     }
 
-    renderTooltips();
+    // renderTooltips();
 };
 
 /******************************************************************************/
@@ -758,6 +759,7 @@ const renderPopupLazy = (( ) => {
     //   Launch potentially expensive hidden elements-counting scriptlet on
     //   demand only.
     {
+        return () => {};
         const sw = uDom.nodeFromId('no-cosmetic-filtering');
         const badge = sw.querySelector(':scope .fa-icon-badge');
         badge.textContent = '\u22EF';

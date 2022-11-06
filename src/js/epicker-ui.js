@@ -318,7 +318,7 @@ const cosmeticCandidatesFromFilterChoice = function(filterChoice) {
 /******************************************************************************/
 
 const onCandidatesOptimized = function(details) {
-    $id('resultsetModifiers').classList.remove('hide');
+    // $id('resultsetModifiers').classList.remove('hide');
     const i = parseInt($stor('#resultsetSpecificity input').value, 10);
     if ( Array.isArray(details.candidates) ) {
         computedSpecificityCandidates.set(details.slot, details.candidates);
@@ -459,8 +459,8 @@ const onCandidateChanged = function() {
     const bad = filter === '!';
     $stor('section').classList.toggle('invalidFilter', bad);
     if ( bad ) {
-        $id('resultsetCount').textContent = 'E';
-        $id('create').setAttribute('disabled', '');
+        // $id('resultsetCount').textContent = 'E';
+        // $id('create').setAttribute('disabled', '');
     }
     const text = rawFilterFromTextarea();
     $id('resultsetModifiers').classList.toggle(
@@ -551,6 +551,19 @@ const onSpecificityChanged = function() {
     onCandidateChanged();
 };
 
+const getBestSelector = function() {
+    renderRange('resultsetSpecificity');
+    const depthInput = $stor('#resultsetDepth input');
+    const slot = 0;
+    const i = parseInt($stor('#resultsetSpecificity input').max, 10);
+    const candidates = computedSpecificityCandidates.get(slot);
+    computedCandidate = candidates[i];
+    cmEditor.setValue(computedCandidate);
+    cmEditor.clearHistory();
+    onCandidateChanged();
+    return computedCandidate;
+};
+
 /******************************************************************************/
 
 const onCandidateClicked = function(ev) {
@@ -589,7 +602,7 @@ const onKeyPressed = function(ev) {
     }
     // Esc
     if ( ev.key === 'Escape' || ev.which === 27 ) {
-        onQuitClicked();
+        cancelPicker();
         return;
     }
 };
@@ -719,7 +732,7 @@ const eatEvent = function(ev) {
 // current mode is narrow or broad.
 
 const populateCandidates = function(candidates, selector) {
-    
+    console.log("populateCandidates" ,candidates ,selector)
     const root = dialog.querySelector(selector);
     const ul = root.querySelector('ul');
     while ( ul.firstChild !== null ) {
@@ -735,8 +748,17 @@ const populateCandidates = function(candidates, selector) {
     } else {
         root.style.setProperty('display', 'none');
     }
+    if(selector=="#cosmeticFilters")
+        setTimeout(function () {
+            var bestSelector=getBestSelector();
+            $id("stream_data_selector_"+selectorTarget).value=bestSelector;
+            $id("stream_data_targeter_"+selectorTarget).style.background="turquoise";
+
+            console.log("best", bestSelector);
+        }, 100);
 };
 
+var selectorTarget=1;
 /******************************************************************************/
 
 const showDialog = function(details) {
@@ -766,7 +788,7 @@ const showDialog = function(details) {
 
     dialog.querySelector('ul').style.display =
         netFilters.length || cosmeticFilters.length ? '' : 'none';
-    $id('create').setAttribute('disabled', '');
+    // $id('create').setAttribute('disabled', '');
 
     // Auto-select a candidate filter
 
@@ -825,15 +847,18 @@ const startPicker = function() {
 
     cmEditor.on('changes', onCandidateChanged);
 
-    $id('preview').addEventListener('click', onPreviewClicked);
-    $id('create').addEventListener('click', onCreateClicked);
-    $id('pick').addEventListener('click', onPickClicked);
+    // $id('preview').addEventListener('click', onPreviewClicked);
+    // $id('create').addEventListener('click', onCreateClicked);
+    // $id('pick').addEventListener('click', onPickClicked);
     $id('quit').addEventListener('click', onQuitClicked);
-    $id('move').addEventListener('mousedown', onStartMoving);
-    $id('move').addEventListener('touchstart', onStartMoving);
-    $id('candidateFilters').addEventListener('click', onCandidateClicked);
-    $stor('#resultsetDepth input').addEventListener('input', onDepthChanged);
-    $stor('#resultsetSpecificity input').addEventListener('input', onSpecificityChanged);
+    $id('cancel').addEventListener('click', cancelPicker);
+    $id('addScrape').addEventListener('click', addStreamScrape);
+    $id('stream_data_targeter_1').addEventListener('click', genConfigureTargetSelector(1));
+    // $id('move').addEventListener('mousedown', onStartMoving);
+    // $id('move').addEventListener('touchstart', onStartMoving);
+    // $id('candidateFilters').addEventListener('click', onCandidateClicked);
+    // $stor('#resultsetDepth input').addEventListener('input', onDepthChanged);
+    // $stor('#resultsetSpecificity input').addEventListener('input', onSpecificityChanged);
     staticFilteringParser = new StaticFilteringParser({
         interactive: true,
         nativeCssHas: vAPI.webextFlavor.env.includes('native_css_has'),
@@ -843,10 +868,116 @@ const startPicker = function() {
 /******************************************************************************/
 
 const quitPicker = function() {
-    vAPI.MessagingConnection.sendTo(epickerConnectionId, { what: 'quitPicker' });
-    vAPI.MessagingConnection.disconnectFrom(epickerConnectionId);
+    var no_scrapes=($id("stream_data").childElementCount-3)/4;
+    var scrapes=[];
+    for(var i=1;i<=no_scrapes;i++)
+        if($id("stream_data_name_"+i).value=="")
+        {
+            var rep=(i%10==1)? i+"st": ((i%10==2)? i+"nd": ((i%10==3)? i+"rd": i+"th"))
+            return alert("Give the "+rep+" value a name");
+        }
+        else if ($id("stream_data_selector_"+i).value=="") {
+            var rep=(i%10==1)? i+"st": ((i%10==2)? i+"nd": ((i%10==3)? i+"rd": i+"th"))
+            return alert("Select an element for the "+rep+" value");
+        }
+        else
+        {
+            scrapes.push({
+                "name": $id("stream_data_name_"+i).value,
+                "selector":$id("stream_data_selector_"+i).value
+            })
+        }
+
+    const Http = new XMLHttpRequest();
+    const url='http://localhost:8069/api/extension';
+    chrome.tabs.query({active: true, lastFocusedWindow: true}, (tabs) => {
+        let page_url = tabs[0].url;
+        // use `url` here inside the callback because it's asynchronous!
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify({
+        "scrapes":scrapes,
+        "url":page_url,
+    }));
+
+
+    xhr.onreadystatechange = () => {
+    if (xhr.readyState === 4) {
+      vAPI.MessagingConnection.sendTo(epickerConnectionId, { what: 'quitPicker' });
+      vAPI.MessagingConnection.disconnectFrom(epickerConnectionId);
+    }
+  }
+});
 };
 
+/******************************************************************************/
+
+const cancelPicker = function() {
+    vAPI.MessagingConnection.sendTo(epickerConnectionId, { what: 'quitPicker' });
+    vAPI.MessagingConnection.disconnectFrom(epickerConnectionId);
+}
+
+/******************************************************************************/
+
+const showScrapes=function()
+{
+    var no_scrapes=($id("stream_data").childElementCount-3)/4;
+    var all=[]
+    for(var i=1;i<=no_scrapes;i++)
+        all.push($id("stream_data_selector_"+i).value)
+    console.log(all)
+}
+
+// stream_data_last
+const addStreamScrape = function() {
+    var element;
+    var no_scrapes=($id("stream_data").childElementCount-3)/4;
+    no_scrapes+=1;
+    element=document.createElement("input")
+    element.setAttribute("type","text")
+    element.setAttribute("id","stream_data_name_"+no_scrapes)
+    $id("stream_data_last").insertAdjacentElement("beforebegin",element)
+
+    element=document.createElement("input")
+    element.setAttribute("class","hidden")
+    element.setAttribute("type","text")
+    element.setAttribute("id","stream_data_selector_"+no_scrapes)
+    $id("stream_data_last").insertAdjacentElement("beforebegin",element)
+
+    element=document.createElement("button")
+    element.setAttribute("name","target")
+    element.setAttribute("type","button")
+    element.setAttribute("style","margin: 0 40px; background: #dc6464;")
+    element.setAttribute("id","stream_data_targeter_"+no_scrapes)
+    element.innerHTML="target";
+    $id("stream_data_last").insertAdjacentElement("beforebegin",element)
+    element.onclick=genConfigureTargetSelector(no_scrapes)
+
+    $id("stream_data_last").insertAdjacentElement("beforebegin",document.createElement("br"))
+
+}
+
+const genConfigureTargetSelector=function(id ) {
+    return () => {
+        ConfigureTargetSelector(id);
+    }
+}
+
+const ConfigureTargetSelector=function(id ) {
+    console.log("reatarget", id)
+    if($id("stream_data_selector_"+selectorTarget).value=="")
+        $id("stream_data_targeter_"+selectorTarget).style.background="#dc6464";
+    else
+        $id("stream_data_targeter_"+selectorTarget).style.background="green";
+    selectorTarget=id
+    if($id("stream_data_selector_"+selectorTarget).value=="")
+        $id("stream_data_targeter_"+selectorTarget).style.background="yellow";
+    else
+        $id("stream_data_targeter_"+selectorTarget).style.background="turquoise";
+
+    showScrapes()
+}
 /******************************************************************************/
 
 const onPickerMessage = function(msg) {
@@ -859,11 +990,11 @@ const onPickerMessage = function(msg) {
             break;
         case 'resultsetDetails': {
             resultsetOpt = msg.opt;
-            $id('resultsetCount').textContent = msg.count;
+            // $id('resultsetCount').textContent = msg.count;
             if ( msg.count !== 0 ) {
-                $id('create').removeAttribute('disabled');
+                // $id('create').removeAttribute('disabled');
             } else {
-                $id('create').setAttribute('disabled', '');
+                // $id('create').setAttribute('disabled', '');
             }
             break;
         }

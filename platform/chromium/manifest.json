@@ -1,5 +1,5 @@
 {
-  "author": "Raymond Hill & contributors",
+    "author": "Rage Againinst the Virtuam Machine(FMI/Smarthack 2022) based on work done by Raymond Hill & contributors",
   "background": {
     "page": "background.html"
   },
@@ -8,7 +8,7 @@
       "16": "img/icon_16.png",
       "32": "img/icon_32.png"
     },
-    "default_title": "uBlock Origin",
+    "default_title": "NoCodeWebScraper Element Selector",
     "default_popup": "popup-fenix.html"
   },
   "commands": {
@@ -75,7 +75,7 @@
   "incognito": "split",
   "manifest_version": 2,
   "minimum_chrome_version": "66.0",
-  "name": "uBlock Origin",
+  "name": "NoCodeWebScraper Element Selector",
   "options_ui": {
     "page": "dashboard.html",
     "open_in_tab": true
@@ -91,7 +91,7 @@
     "webRequestBlocking",
     "<all_urls>"
   ],
-  "short_name": "uBlock₀",
+  "short_name": "NCWS Selector",
   "storage": {
     "managed_schema": "managed_storage.json"
   },

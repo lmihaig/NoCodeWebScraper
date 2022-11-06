@@ -655,7 +655,7 @@ const filterToDOMInterface = (( ) => {
                 filter = filter.slice(2);
             } else if ( filter.startsWith('|') ) {
                 rePrefix = '^';
-                filter = filter.slice(1);   
+                filter = filter.slice(1);
             }
             if ( filter.endsWith('|') ) {
                 reSuffix = '$';
@@ -792,6 +792,7 @@ const filterToDOMInterface = (( ) => {
             if ( previewing ) { apply(); }
             return lastResultset;
         }
+        console.log(compiled);
         lastResultset = fromPlainCosmeticFilter(compiled);
         if ( lastResultset ) {
             if ( previewing ) { apply(); }
@@ -901,6 +902,9 @@ const onOptmizeCandidates = function(details) {
 /******************************************************************************/
 
 const showDialog = function(options) {
+    console.log(netFilterCandidates, cosmeticFilterCandidates, bestCandidateFilter, options)
+    // console.log("A", fromPlainCosmeticFilter(cosmeticFilterCandidates[0].slice(2)))
+    // resultset = filterToDOMInterface.queryAll(msg)
     vAPI.MessagingConnection.sendTo(epickerConnectionId, {
         what: 'showDialog',
         url: self.location.href,
@@ -1159,11 +1163,13 @@ const onDialogMessage = function(msg) {
             onOptmizeCandidates(msg);
             break;
         case 'dialogCreate':
+            console.log("dialogCreate", msg)
             filterToDOMInterface.queryAll(msg);
             filterToDOMInterface.preview(true, true);
             quitPicker();
             break;
         case 'dialogSetFilter': {
+            console.log("dialogSetFilter", msg)
             const resultset = filterToDOMInterface.queryAll(msg) || [];
             highlightElements(resultset.map(a => a.elem), true);
             if ( msg.filter === '!' ) { break; }
