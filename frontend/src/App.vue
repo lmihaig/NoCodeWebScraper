@@ -8,7 +8,7 @@
     </v-app-bar>
 
     <v-main>
-      <WidgetsGrid :widgets="widgets" />
+      <WidgetsGrid v-if="widgets.length" :widgets="widgets" />
     </v-main>
   </v-app>
 </template>
@@ -32,10 +32,31 @@ export default {
   },
   methods: {
     addWidget(input) {
+      const labels = ['January', 'February', 'March', 'April', 'May', 'June'];
+
+      const data = {
+        labels: labels,
+        datasets: [
+          {
+            label: 'My First dataset',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: [0, 10, 5, 2, 20, 30, 45],
+          },
+        ],
+      };
+
+      const config = {
+        type: 'line',
+        data: data,
+        options: {},
+      };
+
       this.widgets.push({
         title: input,
         subTitle: input,
         content: input,
+        config,
       });
     },
   },

@@ -11,14 +11,19 @@
         <div class="layout-center">
           <h3>{{ widget.content }}</h3>
         </div>
+        <Chart :config="widget.config" :index="index" />
       </smart-widget>
     </smart-widget-grid>
   </div>
 </template>
 
 <script>
+import Chart from './chart.vue';
 export default {
   name: 'GridWidget',
+  components: {
+    Chart,
+  },
   props: {
     widgets: {
       type: Array,
@@ -35,6 +40,3 @@ export default {
   },
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped></style>
