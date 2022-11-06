@@ -8,6 +8,11 @@
         :sub-title="widget.subTitle"
         :key="index"
       >
+        <template #toolbar>
+          <v-btn icon class="pa-2" @click="removeWidget(index)">
+            <v-icon> mdi-close </v-icon>
+          </v-btn>
+        </template>
         <div class="layout-center">
           <h3>{{ widget.content }}</h3>
         </div>
@@ -28,15 +33,17 @@ export default {
     widgets: {
       type: Array,
     },
+    layout: {
+      type: Array,
+    },
   },
   data() {
-    return {
-      layout: [
-        { x: 0, y: 0, w: 4, h: 4, i: '0' },
-        { x: 4, y: 0, w: 4, h: 4, i: '1' },
-        { x: 8, y: 0, w: 4, h: 4, i: '2' },
-      ],
-    };
+    return {};
+  },
+  methods: {
+    removeWidget(index) {
+      this.$emit('removeWidget', index);
+    },
   },
 };
 </script>
