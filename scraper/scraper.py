@@ -8,17 +8,21 @@ path_to_chrome_profile = r"C:\Users\lmg\Desktop\NoCodeWebScraper\scraper\chrome_
 
 
 class Scraper:
-    def get_scrape_entries(url, selector):
+    def get_scrape_entries(url, selectors):
         options = webdriver.ChromeOptions()
         options.add_argument(r"--user-data-dir=" + path_to_chrome_profile)
         driver = webdriver.Chrome(options=options)
         driver.get(url)
         driver.implicitly_wait(2)
-        raw_elems = driver.find_elements(By.CSS_SELECTOR, selector[2:])
-        elems = []
-        for elem in raw_elems:
-            elems.append(elem.text)
-        return elems
+        return [
+            [elem.text for elem in driver.find_elements(By.CSS_SELECTOR, selector["selector"][2:])]
+            for selector in selectors
+        ]
+        # raw_elems = driver.find_elements(By.CSS_SELECTOR, selector[2:])
+        # elems = []
+        # for elem in raw_elems:
+        #     elems.append(elem.text)
+        # return elems
 
 
 class ScrapeBatchProcessor:
@@ -33,11 +37,10 @@ class ScrapeBatchProcessor:
                 sleep(10)
                 continue
 
-            new_scrapes = []
-            for scrape in expired_scrapes["job"]["scrapes"]:
-                entries = Scraper.get_scrape_entries(expired_scrapes["job"]["url"],
-                                                     scrape["selector"])
-                new_scrapes.append(entries)
+            new_scrapes = Scraper.get_scrape_entries(
+                expired_scrapes["job"]["url"],
+                expired_scrapes["job"]["scrapes"]
+            )
 
             requests.post(
                 MASTER_SERVER+"api/scraper",

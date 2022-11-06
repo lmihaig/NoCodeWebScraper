@@ -8,12 +8,7 @@
     </v-app-bar>
 
     <v-main>
-      <WidgetsGrid
-        v-if="widgets.length"
-        :layout="layout"
-        :widgets="widgets"
-        @removeWidget="removeWidget"
-      />
+      <WidgetsGrid v-if="widgets.length" :layout="layout" :widgets="widgets" @removeWidget="removeWidget" />
       <h2 v-else>no widgets :(</h2>
     </v-main>
   </v-app>
@@ -38,51 +33,50 @@ export default {
     };
   },
   async mounted() {
-    await fetch('http://192.168.22.158:8069/api/widget', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => console.log(data));
+    const data = await fetch('/api/widget').then((response) => response.json());
+    console.log(data);
+    for (let entry of data) {
+      this.layout.push({
+        x: entry.x,
+        y: entry.y,
+        w: entry.width,
+        h: entry.height,
+        i: this.widgets.length
+      });
+      const data1 = await fetch('/api/source/' + entry.source).then((response) => response.json());
+      console.log(data1)
+      this.widgets.push({
+        title: entry.name,
+        content: data1
+      })
+    }
+    
   },
   methods: {
-    addWidget(input) {
-      const labels = ['January', 'February', 'March', 'April', 'May', 'June'];
-
-      const data = {
-        labels: labels,
-        datasets: [
-          {
-            label: 'My First dataset',
-            backgroundColor: 'rgb(255, 99, 132)',
-            borderColor: 'rgb(255, 99, 132)',
-            data: [0, 10, 5, 2, 20, 30, 45],
-          },
-        ],
-      };
-
-      const config = {
-        type: 'line',
-        data: data,
-        options: {},
-      };
-
-      this.layout.push({
-        x: 0,
-        y: 0,
-        w: 4,
-        h: 4,
-        i: this.widgets.length,
-      });
-      this.widgets.push({
-        title: input,
-        subTitle: input,
-        content: input,
-        config,
-      });
+    async addWidget() {
+      const data = await fetch('/api/widget').then((response) => response.json());
+      this.widgets = [];
+      this.layout = [];
+      for (let entry of data) {
+        this.layout.push({
+          x: entry.x,
+          y: entry.y,
+          w: entry.width,
+          h: entry.height,
+          i: this.widgets.length
+        });
+        const data1 = await fetch('/api/source/' + entry.source).then((response) => response.json());
+        console.log(data1)
+        this.widgets.push({
+          title: entry.name,
+          content: data1
+        })
+      }
     },
-    removeWidget(index) {
+    async removeWidget(index) {
+      await fetch('/api/widget/' + index, {
+        method: 'DELETE'
+      });
       this.widgets.splice(index, 1);
       this.layout.splice(index, 1);
       for (let l of this.layout) {

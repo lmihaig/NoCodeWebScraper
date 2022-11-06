@@ -15,6 +15,12 @@ class ScrapeEntry(EmbeddedDocument):
     val = ListField(StringField())
     scrapedDate = DateTimeField(default=datetime.datetime.now)
 
+    def export_json(self):
+        return {
+            "val": self.val,
+            "scrapedDate": self.scrapedDate,
+        }
+
 
 class Scrape(EmbeddedDocument):
     selector = StringField()
@@ -45,6 +51,16 @@ class Widget(EmbeddedDocument):
     width = IntField()
     height = IntField()
 
+    def export_json(self):
+        return {
+            "source": str(self.source.id),
+            "name": self.name,
+            "x": self.x,
+            "y": self.y,
+            "width": self.width,
+            "height": self.height,
+        }
+
 
 class Dashboard(Document):
     widgets = EmbeddedDocumentListField(Widget)
@@ -74,14 +90,15 @@ mongoConnection = MongoConnection()
 @app.route('/api/sources')
 def get_sources():
     with mongoConnection:
-        return [
+        return {"sources": [
             {
+                "id": str(source.id),
                 "url": source.url,
                 "scrapes": [
                     scrape.name for scrape in source.scrapes
                 ]
             } for source in list(Source.objects)
-        ]
+        ]}
 
 
 @app.route('/api/source/<source_id>')
@@ -89,7 +106,7 @@ def get_source_data(source_id):
     with mongoConnection:
         source = Source.objects.get(id=source_id)
         return {
-            scrape.name: scrape.values
+            scrape.name: list(map(ScrapeEntry.export_json, scrape.values))
             for scrape in source.scrapes}
 
 
@@ -135,15 +152,25 @@ class Extension(Resource):
             ).save()
 
 
+def exportObjID(field_name):
+    def internal(object):
+        object.__setattr__(field_name, str(object.__getattribute__(field_name).id))
+        print(str(object.__getattribute__(field_name)))
+        return object
+    return internal
+
+
 @api.route("/api/widget")
 class Widgets(Resource):
     def get(self):
         with mongoConnection:
             dashboard = Dashboard.objects.get(id="6367338f7c658786739d54cc")
-            return list(dashboard.widgets)
+            out = list(map(Widget.export_json, list(dashboard.widgets)))
+            return out
 
     def post(self):
         args = request.get_json()
+        print(args)
         with mongoConnection:
             dashboard = Dashboard.objects.get(id="6367338f7c658786739d54cc")
             dashboard.widgets.append(Widget(
@@ -157,8 +184,24 @@ class Widgets(Resource):
             dashboard.save()
 
 
+@app.route("/api/dashboard/reorder", methods=["POST"])
+def resize_widget():
+    with mongoConnection:
+        dashboard = Dashboard.objects.get(id="6367338f7c658786739d54cc")
+        args = request.get_json()
+        print(args[0])
+        for i in range(len(dashboard.widgets)):
+            dashboard.widgets[i].x = args[i]["x"]
+            dashboard.widgets[i].y = args[i]["y"]
+            dashboard.widgets[i].width = args[i]["width"]
+            dashboard.widgets[i].height = args[i]["height"]
+
+        dashboard.save()
+    return "", 200
+
+
 @app.route("/api/widget/<widget_id>", methods=["DELETE"])
-def delete_widget(self, widget_id):
+def delete_widget(widget_id):
     with mongoConnection:
         dashboard = Dashboard.objects.get(id="6367338f7c658786739d54cc")
         del dashboard.widgets[int(widget_id)]

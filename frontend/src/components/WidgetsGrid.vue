@@ -1,6 +1,6 @@
 <template>
   <div class="grid-widget">
-    <smart-widget-grid :layout="layout">
+    <smart-widget-grid :layout="layout" @layout-updated="resize">
       <smart-widget
         v-for="(widget, index) in widgets"
         :slot="index"
@@ -16,7 +16,6 @@
         <div class="layout-center">
           <h3>{{ widget.content }}</h3>
         </div>
-        <Chart :config="widget.config" :index="index" />
       </smart-widget>
     </smart-widget-grid>
   </div>
@@ -44,6 +43,24 @@ export default {
     removeWidget(index) {
       this.$emit('removeWidget', index);
     },
+    async resize() {
+      const body = [];
+      for(let entry of this.layout) {
+        body.push({
+          x: entry.x,
+          y: entry.y,
+          width: entry.w,
+          height: entry.h
+        });
+      }
+      await fetch('/api/dashboard/reorder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      })
+    }
   },
 };
 </script>
