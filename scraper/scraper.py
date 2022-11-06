@@ -13,7 +13,7 @@ class Scraper:
         options.add_argument(r"--user-data-dir=" + path_to_chrome_profile)
         driver = webdriver.Chrome(options=options)
         driver.get(url)
-        driver.implicitly_wait(2)
+        driver.implicitly_wait(5)
         return [
             [elem.text for elem in driver.find_elements(By.CSS_SELECTOR, selector["selector"][2:])]
             for selector in selectors
