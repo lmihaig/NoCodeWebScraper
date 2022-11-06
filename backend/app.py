@@ -1,4 +1,5 @@
 import datetime
+from bson import ObjectId
 from mongoengine.fields import EmbeddedDocument, EmbeddedDocumentListField, ListField, StringField, IntField, DateTimeField, ReferenceField
 from threading import Lock
 from mongoengine import Document, disconnect, connect
@@ -38,12 +39,15 @@ class Source(Document):
 
 class Widget(EmbeddedDocument):
     source = ReferenceField(Source)
-    # TODO  FRONTEND
     name = StringField()
+    x = IntField()
+    y = IntField()
+    width = IntField()
+    height = IntField()
 
 
 class Dashboard(Document):
-    widget = EmbeddedDocumentListField(Widget)
+    widgets = EmbeddedDocumentListField(Widget)
     name = StringField()
 
 
@@ -65,6 +69,28 @@ class MongoConnection(object):
 
 
 mongoConnection = MongoConnection()
+
+
+@app.route('/api/sources')
+def get_sources():
+    with mongoConnection:
+        return [
+            {
+                "url": source.url,
+                "scrapes": [
+                    scrape.name for scrape in source.scrapes
+                ]
+            } for source in list(Source.objects)
+        ]
+
+
+@app.route('/api/source/<source_id>')
+def get_source_data(source_id):
+    with mongoConnection:
+        source = Source.objects.get(id=source_id)
+        return {
+            scrape.name: scrape.values
+            for scrape in source.scrapes}
 
 
 @api.route('/api/scraper')
@@ -109,6 +135,35 @@ class Extension(Resource):
             ).save()
 
 
-@apio.route("")
+@api.route("/api/widget")
+class Widgets(Resource):
+    def get(self):
+        with mongoConnection:
+            dashboard = Dashboard.objects.get(id="6367338f7c658786739d54cc")
+            return list(dashboard.widgets)
+
+    def post(self):
+        args = request.get_json()
+        with mongoConnection:
+            dashboard = Dashboard.objects.get(id="6367338f7c658786739d54cc")
+            dashboard.widgets.append(Widget(
+                name=args["name"],
+                source=ObjectId(args["source"]),
+                x=args["x"],
+                y=args["y"],
+                width=args["width"],
+                height=args["height"],
+            ))
+            dashboard.save()
+
+
+@app.route("/api/widget/<widget_id>", methods=["DELETE"])
+def delete_widget(self, widget_id):
+    with mongoConnection:
+        dashboard = Dashboard.objects.get(id="6367338f7c658786739d54cc")
+        del dashboard.widgets[int(widget_id)]
+        dashboard.save()
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=8069)
+    app.run(debug=True, port=8069, host="0.0.0.0")
